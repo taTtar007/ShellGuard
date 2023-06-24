@@ -5,15 +5,15 @@
 #include <stdlib.h> // for malloc(),realloc(),free(),exit(),execvp(),EXIT_SUCCESS, EXIT_FAILURE
 #include <stdio.h>
 #include <string.h> //strcmp(),strtok()
-#define ACMShell_TOK_BUFSIZE 64
-#define ACMShell_TOK_DELIM " \t\r\n\a"
+#define ShellGaurd_TOK_BUFSIZE 64
+#define ShellGaurd_TOK_DELIM " \t\r\n\a"
 
 // initial declarations
-int ACMShell_cd(char **args);
-int ACMShell_help(char **args);
-int ACMShell_exit(char **args);
+int ShellGaurd_cd(char **args);
+int ShellGaurd_help(char **args);
+int ShellGaurd_exit(char **args);
 int sh_bg(char **args);
-int ACMShell_history(char **args);
+int ShellGaurd_history(char **args);
 
 // builtins
 char *builtin_str[] = {
@@ -24,41 +24,41 @@ char *builtin_str[] = {
     "history"};
 // pointers to respective functions
 int (*builtin_func[])(char **) = {
-    &ACMShell_cd,
-    &ACMShell_help,
-    &ACMShell_exit,
+    &ShellGaurd_cd,
+    &ShellGaurd_help,
+    &ShellGaurd_exit,
     &sh_bg,
-    &ACMShell_history};
+    &ShellGaurd_history};
 
-int ACMShell_num_builtins()
+int ShellGaurd_num_builtins()
 {
   return sizeof(builtin_str) / sizeof(char *);
 }
 // implementing cd builtin
-int ACMShell_cd(char **args)
+int ShellGaurd_cd(char **args)
 {
   if (args[1] == NULL)
   {
-    fprintf(stderr, "ACMShell: expected argument to \"cd\"\n");
+    fprintf(stderr, "ShellGaurd: expected argument to \"cd\"\n");
   }
   else
   {
     if (chdir(args[1]) != 0)
     {
-      perror("ACMShell");
+      perror("ShellGaurd");
     }
   }
   return 1;
 }
 // gives list of available builtins and how to operate
-int ACMShell_help(char **args)
+int ShellGaurd_help(char **args)
 {
   int i;
   printf("ACM's very own shell\n");
   printf("Type program names and arguments, and hit enter.\n");
   printf("The following are built in:\n");
 
-  for (i = 0; i < ACMShell_num_builtins(); i++)
+  for (i = 0; i < ShellGaurd_num_builtins(); i++)
   {
     printf("  %s\n", builtin_str[i]);
   }
@@ -118,7 +118,7 @@ void add_to_hist(char **args)
 }
 // creating a function to display history:
 
-int ACMShell_history(char **args)
+int ShellGaurd_history(char **args)
 {
   struct Node *ptr = head;
   int i = 1;
@@ -130,8 +130,8 @@ int ACMShell_history(char **args)
   return 1;
 }
 
-// exit ACMShell
-int ACMShell_exit(char **args)
+// exit ShellGaurd
+int ShellGaurd_exit(char **args)
 {
   return 0;
 }
@@ -162,7 +162,7 @@ int sh_bg(char **args)
 // some processes such as all the builtins just change the properties of
 // spawned child and not of the parent process.For them we have builtins and for
 // rest, we have following:
-int ACMShell_launch(char **args)
+int ShellGaurd_launch(char **args)
 {
   pid_t pid;
   int status;
@@ -173,14 +173,14 @@ int ACMShell_launch(char **args)
     // Child process
     if (execvp(args[0], args) == -1)
     {
-      perror("ACMShell");
+      perror("ShellGaurd");
     }
     exit(EXIT_FAILURE);
   }
   else if (pid < 0)
   {
     // Error forking
-    perror("ACMShell");
+    perror("ShellGaurd");
   }
   else
   {
@@ -195,7 +195,7 @@ int ACMShell_launch(char **args)
 }
 
 // executing the builtins and calling launc() for rest.
-int ACMShell_execute(char **args)
+int ShellGaurd_execute(char **args)
 {
 
   int i;
@@ -206,7 +206,7 @@ int ACMShell_execute(char **args)
     return 1;
   }
   // search for builtins
-  for (i = 0; i < ACMShell_num_builtins(); i++)
+  for (i = 0; i < ShellGaurd_num_builtins(); i++)
   {
     if (strcmp(args[0], builtin_str[i]) == 0)
     {
@@ -214,20 +214,20 @@ int ACMShell_execute(char **args)
     }
   }
 
-  return ACMShell_launch(args);
+  return ShellGaurd_launch(args);
 }
 // reading the input via standard procedure of allocation-reallocation
-char *ACMShell_read_line(void)
+char *ShellGaurd_read_line(void)
 {
-#define ACMShell_RL_BUFSIZE 1024
-  int bufsize = ACMShell_RL_BUFSIZE;
+#define ShellGaurd_RL_BUFSIZE 1024
+  int bufsize = ShellGaurd_RL_BUFSIZE;
   int position = 0;
   char *buffer = malloc(sizeof(char) * bufsize); // contains input
   int c;
 
   if (!buffer)
   {
-    fprintf(stderr, "ACMShell: allocation error\n");
+    fprintf(stderr, "ShellGaurd: allocation error\n");
     exit(EXIT_FAILURE);
   }
 
@@ -254,11 +254,11 @@ char *ACMShell_read_line(void)
     // If we have exceeded the buffer, reallocate.
     if (position >= bufsize)
     {
-      bufsize += ACMShell_RL_BUFSIZE;
+      bufsize += ShellGaurd_RL_BUFSIZE;
       buffer = realloc(buffer, bufsize);
       if (!buffer)
       {
-        fprintf(stderr, "ACMShell: allocation error\n");
+        fprintf(stderr, "ShellGaurd: allocation error\n");
         exit(EXIT_FAILURE);
       }
     }
@@ -266,19 +266,19 @@ char *ACMShell_read_line(void)
 }
 
 // parsing the input and separating via separator(in this case a blanck space)
-char **ACMShell_split_line(char *line)
+char **ShellGaurd_split_line(char *line)
 {
-  int bufsize = ACMShell_TOK_BUFSIZE, position = 0;
+  int bufsize = ShellGaurd_TOK_BUFSIZE, position = 0;
   char **tokens = malloc(bufsize * sizeof(char *)); // strores the different parts of command
   char *token, **tokens_backup;
 
   if (!tokens)
   {
-    fprintf(stderr, "ACMShell: allocation error\n");
+    fprintf(stderr, "ShellGaurd: allocation error\n");
     exit(EXIT_FAILURE);
   }
 
-  token = strtok(line, ACMShell_TOK_DELIM);
+  token = strtok(line, ShellGaurd_TOK_DELIM);
   while (token != NULL)
   {
     tokens[position] = token;
@@ -286,24 +286,24 @@ char **ACMShell_split_line(char *line)
 
     if (position >= bufsize)
     {
-      bufsize += ACMShell_TOK_BUFSIZE;
+      bufsize += ShellGaurd_TOK_BUFSIZE;
       tokens_backup = tokens;
       tokens = realloc(tokens, bufsize * sizeof(char *));
       if (!tokens)
       {
         free(tokens_backup);
-        fprintf(stderr, "ACMShell: allocation error\n");
+        fprintf(stderr, "ShellGaurd: allocation error\n");
         exit(EXIT_FAILURE);
       }
     }
 
-    token = strtok(NULL, ACMShell_TOK_DELIM);
+    token = strtok(NULL, ShellGaurd_TOK_DELIM);
   }
   tokens[position] = NULL;
   return tokens;
 }
 // loop till termination
-void ACMShell_loop(void)
+void ShellGaurd_loop(void)
 {
   char *line;
   char **args;
@@ -312,10 +312,10 @@ void ACMShell_loop(void)
   do
   {
     printf("> ");
-    line = ACMShell_read_line();
-    args = ACMShell_split_line(line);
+    line = ShellGaurd_read_line();
+    args = ShellGaurd_split_line(line);
     add_to_hist(args);
-    status = ACMShell_execute(args);
+    status = ShellGaurd_execute(args);
 
     free(line);
     free(args);
@@ -325,6 +325,6 @@ void ACMShell_loop(void)
 int main(int argc, char **argv)
 {
   // currcomm=0;
-  ACMShell_loop();
+  ShellGaurd_loop();
   return EXIT_SUCCESS;
 }
